@@ -1,5 +1,6 @@
 const { Observable, from } = require('rxjs')
 const { map } = require('rxjs/operators')
+const readline = require('readline')
 
 exports.test = function() {
    return true
@@ -49,10 +50,24 @@ const get_lower_right = (index, state) => {
       return state.board[idx]
 }
 
+const get_left = (index, state) => {
+   const idx = get_impl(index, state, 0, -2);
+   if(idx !== undefined)
+      return state.board[idx]
+}
+
+const get_right = (index, state) => {
+   const idx = get_impl(index, state, 0, 2);
+   if(idx !== undefined)
+      return state.board[idx]
+}
+
 exports.get_upper_left = get_upper_left
 exports.get_upper_right = get_upper_right
 exports.get_lower_left = get_lower_left
 exports.get_lower_right = get_lower_right
+exports.get_left = get_left
+exports.get_right = get_right
 
 const travel = function(current_index, index, rem, travel_direction) {
    while(rem > 0) {
@@ -140,6 +155,9 @@ const is_reachable = (state, player) => {
       let ur = get_impl(pos, state, -1, 1)
       let ll = get_impl(pos, state, 1, -1)
       let lr = get_impl(pos, state, 1, 1)
+      let left = get_impl(pos, state, 0, -2)
+      let right = get_impl(pos, state, 0, 2)
+
       if(state[player] !== pos) {
          console.log("checking if %s neighbors is occupied by a player since this was reached by %s", pos, state[player])
          if(check(state, player, ul))
@@ -149,6 +167,10 @@ const is_reachable = (state, player) => {
          else if(check(state, player, ll))
             return true
          else if(check(state, player, lr))
+            return true
+         else if(check(state, player, left))
+            return true
+         else if(check(state, player, right))
             return true
 
       }
@@ -168,7 +190,12 @@ const is_reachable = (state, player) => {
       if(lr !== undefined && state.board[lr] && !state.board[lr].visited) {
          stack.push(lr)
       }
-
+      if(left !== undefined && state.board[left] && !state.board[left].visited) {
+         stack.push(left)
+      }
+      if(right !== undefined && state.board[right] && !state.board[right].visited) {
+         stack.push(right)
+      }
 
    }
 
@@ -178,7 +205,7 @@ const is_reachable = (state, player) => {
 exports.is_reachable = is_reachable
 
 // initializes the board
-exports.construct_state = function(board_size, max_turns) {
+const construct_state = function(board_size, max_turns) {
    if(board_size < 0)
       throw "Invalid board size"
 
@@ -188,7 +215,7 @@ exports.construct_state = function(board_size, max_turns) {
    let board = []
    const row_length = 2 * board_size - 1
    let mesh_size = row_length * board_size
-   console.log('mesh_size %s', mesh_size);
+//   console.log('mesh_size %s', mesh_size);
    for(let i = 0; i < mesh_size; ++i) {
       if(is_valid_space(i, board_size)) {
 //         console.log('index %s is a valid space', i)
@@ -215,7 +242,9 @@ exports.construct_state = function(board_size, max_turns) {
    };
 }
 
-exports.display_board = function(state) {
+exports.construct_state = construct_state
+
+const display_board = function(state) {
    if(!state)
       throw "state cannot be undefined"
 
@@ -224,7 +253,7 @@ exports.display_board = function(state) {
    if(!state.board_size || state.board_size < 0)
       throw "board_size is invalid"
    const rows = Math.floor(state.board.length / (2 * state.board_size - 1))
-   console.log('expected rows %s', rows)
+//   console.log('expected rows %s', rows)
    const row_width = state.board_size + state.board_size - 1;
  //  console.log(state)
    for(let r = 0; r < rows; ++r) {
@@ -237,5 +266,121 @@ exports.display_board = function(state) {
    }
 }
 
-const run_game_loop = () => {
+exports.display_board = display_board
+
+const process_move = (move, state, player) => {
+   if(move === 'ul') {
+      return get_impl(state[player], state, -1, -1)
+   }
+   else if(move === 'll') {
+      return get_impl(state[player], state, 1, -1)
+   }
+   else if(move === 'lr') {
+      return get_impl(state[player], state, 1, 1)
+   }
+   else if(move === 'ur') {
+      return get_impl(state[player], state, -1, 1)
+   }
+   else if(move === 'lt') {
+      return get_impl(state[player], state, 0, -2)
+   }
+   else if(move === 'rt') {
+      return get_impl(state[player], state, 0, 2)
+   }
+}
+
+const process_jackhammer = (move, state, player) => {
+   if(move === 'j_ul') {
+      return get_impl(state[player], state, -1, -1) 
+   }
+   else if(move === 'j_ur') {
+      return get_impl(state[player], state, -1, 1)
+   }
+
+   else if(move === 'j_ll') {
+      return get_impl(state[player], state, 1, -1)
+   }
+
+   else if(move === 'j_lr') {
+      return get_impl(state[player], state, 1, 1)
+   }
+
+   else if(move === 'j_lt') {
+      return get_impl(state[player], state, 0, -2)
+   }
+   else if(move === 'j_rt') {
+      return get_impl(state[player], state, 0, 2)
+   }
+
+}
+
+const make_move = (index, state, player) => {
+   if(state.board[index] && state.board[index].state === 'o') {
+      state.board[state[player]].state = 'o'
+      state[player] = index
+      state.board[index].state = player[1]
+   }
+}
+
+const process_player = (p, state, player) => {
+   let move;
+//   console.log('move %s', p)
+   if((move = process_move(p, state, player)) !== undefined)
+      make_move(move, state, player)
+   if((move = process_jackhammer(p, state, player)) !== undefined) {
+      if(state.board[move])
+         state.board[move].state = 'x'
+   }
+
+}
+
+exports.process_player = process_player
+
+const run_turn = (state, turns) => {
+   console.log('running turn: %s', turns)
+   if(turns > 0) {
+      let p1, p2, p3;
+      const r = readline.createInterface({
+         input: process.stdin,
+         output: process.stdout
+      })
+      // get player 1 move
+      r.question('player 1 move (ul, ur, ll, lr, lt, rt, j_ul, j_ur, j_ll, j_lr, j_lt, j_rt, p) : ', data => {
+         p1 = data
+         r.question('player 2 move  (ul, ur, ll, lr, lt, rt, j_ul, j_ur, j_ll, j_lr, j_lt, j_rt, p) : ', data => {
+            p2 = data
+            r.question('player 3 move (ul, ur, ll, lr, lt, rt, j_ul, j_ur, j_ll, j_lr, j_lt, j_rt, p) : ', data => {
+               p3 = data
+               r.close()
+               process_player(p1, state, 'p1')
+               process_player(p2, state, 'p2')
+               process_player(p3, state, 'p3')
+               display_board(state)
+               run_turn(state, turns - 1)
+            })
+         })
+      })
+      // get player 2 move
+
+      // get player 3 move
+
+   }
+}
+
+exports.run_turn = run_turn
+
+if(process.env.NODE_ENV === 'production') {
+   const r = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+   })
+   r.question("Board Size? > ", data => {
+      let board_size = parseInt(data)
+      r.question("Num Turns? > ", data => {
+         r.close()
+         let num_turns = parseInt(data)
+         const state = construct_state(board_size, num_turns)
+         run_turn(state, num_turns)
+      })
+   })
 }

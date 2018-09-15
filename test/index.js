@@ -32,15 +32,39 @@ describe('jack_hammer', function() {
       expect(true).to.be.true
    })
 
+   it('test process player', function() {
+      const state = mod.construct_state(4, 1)
+      mod.process_player('ul', state, 'p1')
+      expect(state.board[3].state).to.equal('1')
+      expect(state.p1).to.equal(3)
+      mod.process_player('ll', state, 'p1')
+      expect(state.board[3].state).to.equal('o')
+      expect(state.board[9].state).to.equal('1')
+      expect(state.p1).to.equal(9)
+      mod.process_player('j_rt', state, 'p1')
+      expect(state.board[9].state).to.equal('1')
+      expect(state.board[11].state).to.equal('x')
+      expect(state.p1).to.equal(9)
+
+      mod.process_player('j_lt', state, 'p1')
+      expect(state.board[9].state).to.equal('1')
+   })
+
    it('test move', function() {
       const state = mod.construct_state(4, 1);
       expect(mod.get_upper_left(3, state)).to.be.undefined
       expect(mod.get_upper_right(3, state)).to.be.undefined
       expect(mod.get_lower_left(3, state)).to.have.property('state')
       expect(mod.get_lower_right(3, state)).to.have.property('state')
+      expect(mod.get_left(3, state)).to.be.undefined
+      expect(mod.get_right(3, state)).to.be.undefined
 
       expect(mod.get_upper_left(17, state)).to.have.property('state')
       expect(mod.get_upper_right(17, state)).to.have.property('state')
+      expect(mod.get_left(17, state)).to.have.property('state')
+      expect(mod.get_right(17, state)).to.have.property('state')
+
+      expect(mod.get_left(9, state)).to.be.undefined
    })
 
    it('test reachable', function() {
