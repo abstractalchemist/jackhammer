@@ -336,7 +336,7 @@ const process_player = (p, state, player) => {
 
 exports.process_player = process_player
 
-const run_turn = (state, turns) => {
+const run_turn = (state, turns, p1_input, p2_input, p3_input) => {
    console.log('running turn: %s', turns)
    if(turns > 0) {
       let p1, p2, p3;
@@ -345,11 +345,22 @@ const run_turn = (state, turns) => {
          output: process.stdout
       })
       // get player 1 move
-      r.question('player 1 move (ul, ur, ll, lr, lt, rt, j_ul, j_ur, j_ll, j_lr, j_lt, j_rt, p) : ', data => {
+      const pone_input = p1_input || ((cb) => {
+         r.question('player 1 move (ul, ur, ll, lr, lt, rt, j_ul, j_ur, j_ll, j_lr, j_lt, j_rt, p) : ', cb)
+      })
+      const ptwo_input = p2_input || ((cb) => {
+         r.question('player 2 move  (ul, ur, ll, lr, lt, rt, j_ul, j_ur, j_ll, j_lr, j_lt, j_rt, p) : ', cb)
+      })
+      const pthree_input = p3_input || ((cb) => {
+         r.question('player 3 move (ul, ur, ll, lr, lt, rt, j_ul, j_ur, j_ll, j_lr, j_lt, j_rt, p) : ', cb)
+      })
+
+
+      pone_input(data => {
          p1 = data
-         r.question('player 2 move  (ul, ur, ll, lr, lt, rt, j_ul, j_ur, j_ll, j_lr, j_lt, j_rt, p) : ', data => {
+         ptwo_input(data => {
             p2 = data
-            r.question('player 3 move (ul, ur, ll, lr, lt, rt, j_ul, j_ur, j_ll, j_lr, j_lt, j_rt, p) : ', data => {
+            p3_input(data => {
                p3 = data
                r.close()
                process_player(p1, state, 'p1')
@@ -377,9 +388,36 @@ if(process.env.NODE_ENV === 'production') {
    r.question("Board Size? > ", data => {
       let board_size = parseInt(data)
       r.question("Num Turns? > ", data => {
+         let p1 = undefined
+         let p2 = undefined
+         let p3 = undefined
+         if(process.env.PLAYER1) {
+            const r = readline.createInterface({
+               input: process.createReadStream(process.env.PLAYER1)
+            })
+            p1 = cb => {
+               r.question('', cb)
+            }
+         }
+         if(process.env.PLAYER2) {
+            const r = readline.createInterface({
+               input: process.createReadStream(process.env.PLAYER2)
+            })
+            p2 = cb => {
+               r.question('', cb)
+            }
+         }
+         if(process.env.PLAYER3) {
+            const r = readline.createInterface({
+               input: process.createReadStream(process.env.PLAYER3)
+            })
+            p3 = cb => {
+               r.question('', cb)
+            }
+         }
          r.close()
          let num_turns = parseInt(data)
-         const state = construct_state(board_size, num_turns)
+         const state = construct_state(board_size, num_turns, p1, p2, p3)
          run_turn(state, num_turns)
       })
    })
