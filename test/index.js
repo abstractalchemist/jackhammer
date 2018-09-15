@@ -23,11 +23,28 @@ describe('jack_hammer', function() {
       expect(mod.is_valid_space(3, 4)).to.be.true
       expect(mod.is_valid_space(4,4)).to.be.false
       expect(mod.is_valid_space(11,4)).to.be.true
+      expect(mod.is_valid_space(17, 4)).to.be.true
    })
 
    it('test display', function() {
       const state = mod.construct_state(4, 1);
       mod.display_board(state);
       expect(true).to.be.true
+   })
+
+   it('test move', function() {
+      const state = mod.construct_state(4, 1);
+      expect(mod.get_upper_left(3, state)).to.be.undefined
+      expect(mod.get_upper_right(3, state)).to.be.undefined
+      expect(mod.get_lower_left(3, state)).to.have.property('state')
+      expect(mod.get_lower_right(3, state)).to.have.property('state')
+
+      expect(mod.get_upper_left(17, state)).to.have.property('state')
+      expect(mod.get_upper_right(17, state)).to.have.property('state')
+   })
+
+   it('test reachable', function() {
+      const state = mod.construct_state(4,1)
+      expect(mod.is_reachable(state, 'p1')).to.be.true
    })
 })
