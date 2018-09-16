@@ -148,8 +148,14 @@ const is_reachable = (state, player) => {
    })
 
    let stack = [state[player]]
+   let score = 0
    while(stack.length > 0) {
       let pos = stack.pop()
+ //     console.log('current pos %s', pos)
+      if(state.board[pos].visited)
+         continue
+      score ++;
+ //      console.log('current score %s', score)
       state.board[pos].visited = true
       let ul = get_impl(pos, state, -1, -1)
       let ur = get_impl(pos, state, -1, 1)
@@ -159,46 +165,46 @@ const is_reachable = (state, player) => {
       let right = get_impl(pos, state, 0, 2)
 
       if(state[player] !== pos) {
-         console.log("checking if %s neighbors is occupied by a player since this was reached by %s", pos, state[player])
+//         console.log("checking if %s neighbors is occupied by a player since this was reached by %s", pos, state[player])
          if(check(state, player, ul))
-            return true
+            return 0
          else if(check(state, player, ur))
-            return true
+            return 0
          else if(check(state, player, ll))
-            return true
+            return 0
          else if(check(state, player, lr))
-            return true
+            return 0
          else if(check(state, player, left))
-            return true
+            return 0
          else if(check(state, player, right))
-            return true
+            return 0
 
       }
          
-      if(ul !== undefined && state.board[ul] && !state.board[ul].visited) {
+      if(ul !== undefined && state.board[ul] && !(state.board[ul].visited || state.board[ul].state === 'x')) {
          stack.push(ul)
       }
       
-      if(ur !== undefined && state.board[ur] && !state.board[ur].visited) {
+      if(ur !== undefined && state.board[ur] && !(state.board[ur].visited || state.board[ur].state === 'x')) {
          stack.push(ur)
       }
 
-      if(ll !== undefined && state.board[ll] && !state.board[ll].visited) {
+      if(ll !== undefined && state.board[ll] && !(state.board[ll].visited || state.board[ll].state === 'x')) {
          stack.push(ll)
       }
 
-      if(lr !== undefined && state.board[lr] && !state.board[lr].visited) {
+      if(lr !== undefined && state.board[lr] && !(state.board[lr].visited || state.board[lr].state === 'x')) {
          stack.push(lr)
       }
-      if(left !== undefined && state.board[left] && !state.board[left].visited) {
+      if(left !== undefined && state.board[left] && !(state.board[left].visited || state.board[left].state === 'x')) {
          stack.push(left)
       }
-      if(right !== undefined && state.board[right] && !state.board[right].visited) {
+      if(right !== undefined && state.board[right] && !(state.board[right].visited || state.board[right].state === 'x')) {
          stack.push(right)
       }
 
    }
-
+   return score;
 
 }
 
@@ -396,7 +402,28 @@ const run_turn = (state, turns, p1_input, p2_input, p3_input) => {
 
    }
    else {
-      
+      console.log('end of game')
+      let player1_score = is_reachable(state, 'p1')
+      let player2_score = is_reachable(state, 'p2')
+      let player3_score = is_reachable(state, 'p3')
+
+      let max = Math.max(player1_score, player2_score, player3_score)
+      if(max === 0)
+         console.log("no one wins")
+      else {
+         if(max === player1_score) {
+            console.log("player 1 wins")
+
+         }
+         else if(max === player2_score) {
+            console.log("player 2 wins")
+
+         }
+
+         else if(max === player3_score) {
+            console.log("player 3 score")
+         }
+      }
    }
 }
 

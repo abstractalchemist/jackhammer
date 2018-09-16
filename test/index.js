@@ -69,6 +69,16 @@ describe('jack_hammer', function() {
 
    it('test reachable', function() {
       const state = mod.construct_state(4,1)
-      expect(mod.is_reachable(state, 'p1')).to.be.true
+      expect(mod.is_reachable(state, 'p1')).to.equal(0)
+
+      state.board[15].state = 'x'
+      //state.board[17].state = 'x'
+      state.board[19].state = 'x'
+
+      state.board[23].state = 'x'
+      state.board[25].state = 'x'
+      mod.display_board(state)
+      expect(mod.is_reachable(state, 'p1')).to.equal(4)
+      expect(mod.is_reachable(state, 'p2')).to.equal(1)
    })
 })
