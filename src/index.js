@@ -315,7 +315,7 @@ const process_jackhammer = (move, state, player) => {
 }
 
 const make_move = (index, state, player) => {
-   if(state.board[index] && state.board[index].state === 'o') {
+   if(state.board[index] && state.board[index].state !== 'x') {
       state.board[state[player]].state = 'o'
       state[player] = index
       state.board[index].state = player[1]
@@ -328,7 +328,7 @@ const process_player = (p, state, player) => {
    if((move = process_move(p, state, player)) !== undefined)
       make_move(move, state, player)
    if((move = process_jackhammer(p, state, player)) !== undefined) {
-      if(state.board[move])
+      if(state.board[move] && state.board[move].state === 'o')
          state.board[move].state = 'x'
    }
 
@@ -364,18 +364,39 @@ const run_turn = (state, turns, p1_input, p2_input, p3_input) => {
             pthree_input(data => {
                p3 = data
                r.close()
-               process_player(p1, state, 'p1')
-               process_player(p2, state, 'p2')
-               process_player(p3, state, 'p3')
+               let move;
+            //   console.log('move %s', p)
+               if((move = process_move(p1, state, 'p1')) !== undefined)
+                  make_move(move, state, 'p1')
+               if((move = process_move(p2, state, 'p2')) !== undefined)
+                  make_move(move, state, 'p2')
+               if((move = process_move(p3, state, 'p3')) !== undefined)
+                  make_move(move, state, 'p3')
+
+               if((move = process_jackhammer(p1, state, 'p1')) !== undefined) {
+                  if(state.board[move] && state.board[move].state === 'o')
+                     state.board[move].state = 'x'
+               }
+               if((move = process_jackhammer(p2, state, 'p2')) !== undefined) {
+                  if(state.board[move] && state.board[move].state === 'o')
+                     state.board[move].state = 'x'
+               }
+
+               if((move = process_jackhammer(p3, state, 'p3')) !== undefined) {
+                  if(state.board[move] && state.board[move].state === 'o')
+                     state.board[move].state = 'x'
+               }
+
+
                display_board(state)
                run_turn(state, turns - 1, p1_input, p2_input, p3_input)
             })
          })
       })
-      // get player 2 move
 
-      // get player 3 move
-
+   }
+   else {
+      
    }
 }
 
