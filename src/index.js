@@ -1,7 +1,7 @@
 const { Observable, from } = require('rxjs')
 const { map } = require('rxjs/operators')
 const readline = require('readline')
-
+const fs = require('fs')
 exports.test = function() {
    return true
 }
@@ -344,6 +344,7 @@ const run_turn = (state, turns, p1_input, p2_input, p3_input) => {
          input: process.stdin,
          output: process.stdout
       })
+      //console.log(p1_input)
       // get player 1 move
       const pone_input = p1_input || ((cb) => {
          r.question('player 1 move (ul, ur, ll, lr, lt, rt, j_ul, j_ur, j_ll, j_lr, j_lt, j_rt, p) : ', cb)
@@ -360,14 +361,14 @@ const run_turn = (state, turns, p1_input, p2_input, p3_input) => {
          p1 = data
          ptwo_input(data => {
             p2 = data
-            p3_input(data => {
+            pthree_input(data => {
                p3 = data
                r.close()
                process_player(p1, state, 'p1')
                process_player(p2, state, 'p2')
                process_player(p3, state, 'p3')
                display_board(state)
-               run_turn(state, turns - 1)
+               run_turn(state, turns - 1, p1_input, p2_input, p3_input)
             })
          })
       })
@@ -392,33 +393,36 @@ if(process.env.NODE_ENV === 'production') {
          let p2 = undefined
          let p3 = undefined
          if(process.env.PLAYER1) {
-            const r = readline.createInterface({
-               input: process.createReadStream(process.env.PLAYER1)
-            })
+            let data = fs.readFileSync(process.env.PLAYER1, 'utf-8')
+            data = data.split('\n')
+            console.log(data)
             p1 = cb => {
-               r.question('', cb)
+               cb(data.shift())
             }
          }
          if(process.env.PLAYER2) {
-            const r = readline.createInterface({
-               input: process.createReadStream(process.env.PLAYER2)
-            })
+            let data = fs.readFileSync(process.env.PLAYER2, 'utf-8')
+            data = data.split('\n')
+            console.log(data)
             p2 = cb => {
-               r.question('', cb)
+               cb(data.shift())
             }
+
          }
          if(process.env.PLAYER3) {
-            const r = readline.createInterface({
-               input: process.createReadStream(process.env.PLAYER3)
-            })
+            let data = fs.readFileSync(process.env.PLAYER3, 'utf-8')
+            data = data.split('\n')
+            console.log(data)
             p3 = cb => {
-               r.question('', cb)
+               cb(data.shift())
             }
+
          }
          r.close()
          let num_turns = parseInt(data)
-         const state = construct_state(board_size, num_turns, p1, p2, p3)
-         run_turn(state, num_turns)
+         const state = construct_state(board_size, num_turns)
+         display_board(state)
+         run_turn(state, num_turns, p1, p2, p3)
       })
    })
 }
