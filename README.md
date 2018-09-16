@@ -9,8 +9,9 @@ npm i
 gulp tests ( assumes gulp is installed globally, which will require root )
 
 # run the game 
+```
 npm start
-
+```
 with player script
 ```
 PLAYER{1,2,3}=<path to script> npm start
