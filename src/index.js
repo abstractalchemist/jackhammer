@@ -180,26 +180,28 @@ const is_reachable = (state, player) => {
             return 0
 
       }
-         
-      if(ul !== undefined && state.board[ul] && !(state.board[ul].visited || state.board[ul].state === 'x')) {
+      const visit = move => {
+         return (move !== undefined && state.board[move] && !(state.board[move].visited || state.board[move].state === 'x'))
+      }
+      if(visit(ul)) {
          stack.push(ul)
       }
       
-      if(ur !== undefined && state.board[ur] && !(state.board[ur].visited || state.board[ur].state === 'x')) {
+      if(visit(ur)) {
          stack.push(ur)
       }
 
-      if(ll !== undefined && state.board[ll] && !(state.board[ll].visited || state.board[ll].state === 'x')) {
+      if(visit(ll)) {
          stack.push(ll)
       }
 
-      if(lr !== undefined && state.board[lr] && !(state.board[lr].visited || state.board[lr].state === 'x')) {
+      if(visit(lr)) {
          stack.push(lr)
       }
-      if(left !== undefined && state.board[left] && !(state.board[left].visited || state.board[left].state === 'x')) {
+      if(visit(left)) {
          stack.push(left)
       }
-      if(right !== undefined && state.board[right] && !(state.board[right].visited || state.board[right].state === 'x')) {
+      if(visit(right)) {
          stack.push(right)
       }
 
